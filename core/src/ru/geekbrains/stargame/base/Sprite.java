@@ -17,6 +17,14 @@ public class Sprite extends Rect {
         regions = new TextureRegion[1];
         regions[0] = region;
     }
+    public Sprite(TextureRegion region, int frame) {
+        regions = new TextureRegion[frame];
+        int width = region.getRegionWidth()/frame;
+        for (int i = 0; i < regions.length; i++) {
+            regions[i] = new TextureRegion(region,i*width,0,width,region.getRegionHeight() );
+        }
+
+    }
 
     public void setHeightProportion(float height) {
         setHeight(height);
@@ -26,6 +34,16 @@ public class Sprite extends Rect {
 
     public void update(float delta) {
 
+    }
+    public void draw(SpriteBatch batch, int frame) {
+        batch.draw(
+                regions[frame],
+                getLeft(), getBottom(),
+                halfWidth, halfHeight,
+                getWidth(), getHeight(),
+                scale, scale,
+                angle
+        );
     }
 
     public void draw(SpriteBatch batch) {
@@ -50,9 +68,10 @@ public class Sprite extends Rect {
         return false;
     }
 
-    public boolean touchDragged(int screenX, int screenY, int pointer) {
+    public boolean touchDragged(Vector2 touch, int pointer) {
         return false;
     }
+
 
     public float getAngle() {
         return angle;
