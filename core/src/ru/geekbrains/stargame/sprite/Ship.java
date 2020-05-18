@@ -1,5 +1,6 @@
 package ru.geekbrains.stargame.sprite;
 
+import com.badlogic.gdx.Input;
 import com.badlogic.gdx.graphics.g2d.TextureAtlas;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.math.Vector2;
@@ -9,56 +10,142 @@ import ru.geekbrains.stargame.base.Sprite;
 import ru.geekbrains.stargame.math.Rect;
 
 public class Ship extends Sprite {
+    private static final float SIZE = 0.15f;
+    private static final float MARGIN = 0.05f;
+    private static final int INVALID_POINTER = -1;
+    private boolean pressedLeft;
+    private boolean pressedRight;
+
     private TextureRegion[] region;
-    private Vector2 speed, touch, temp;
+    private Vector2 v0, v, bulletV;
+    private int leftPointer;
+    private int rightPointer;
+    private Rect worldBounds;
     public Ship(TextureAtlas atlas) {
         super(atlas.findRegion("main_ship"),2);
-        speed = new Vector2(0.01f,0f);
-        touch = new Vector2();
-        temp = new Vector2();
+
     }
 
     @Override
     public void update(float delta) {
-        super.update(delta);
-        move();
+        move(delta);
     }
 
     @Override
     public void resize(Rect worldBounds) {
+        this.worldBounds = worldBounds;
         setHeightProportion(0.15f);
         setBottom(worldBounds.getBottom());
     }
 
+    private void move(float delta) {
+        pos.mulAdd(v, delta);
+        if (getLeft() < worldBounds.getLeft()) {
+            stop();
+            setLeft(worldBounds.getLeft());
+        }
+        if (getRight() > worldBounds.getRight()) {
+            stop();
+            setRight(worldBounds.getRight());
+        }
+    }
+
     @Override
     public boolean touchDown(Vector2 touch, int pointer, int button) {
+        if (touch.x < worldBounds.pos.x) {
+            if (leftPointer != INVALID_POINTER) {
+                return false;
+            }
+            leftPointer = pointer;
+            moveLeft();
+        } else {
+            if (rightPointer != INVALID_POINTER) {
+                return false;
+            }
+            rightPointer = pointer;
+            moveRight();
+        }
         return false;
     }
 
     @Override
     public boolean touchUp(Vector2 touch, int pointer, int button) {
-        this.touch.set(touch);
-        temp.set(touch);
-        temp.sub(pos);
-        temp.nor();
-        temp.scl(speed);
-
+        if (pointer == leftPointer) {
+            leftPointer = INVALID_POINTER;
+            if (rightPointer != INVALID_POINTER) {
+                moveRight();
+            } else {
+                stop();
+            }
+        } else if (pointer == rightPointer) {
+            rightPointer = INVALID_POINTER;
+            if (leftPointer != INVALID_POINTER) {
+                moveLeft();
+            } else {
+                stop();
+            }
+        }
         return false;
     }
 
-    private void move() {
-        if (touch.sub(pos).len()>temp.len()){
-            System.out.println("temp.len "+ temp.len()+ " touch.sub(pos).len "+touch.sub(pos).len());
-            pos.add(temp);
-            System.out.println("pos.add.x " +pos.x+" pos.add.y "+pos.y);
-        }else{
-            pos.set(touch);
+    public boolean keyDown(int keycode) {
+        switch (keycode) {
+            case Input.Keys.A:
+            case Input.Keys.LEFT:
+                pressedLeft = true;
+                moveLeft();
+                break;
+            case Input.Keys.D:
+            case Input.Keys.RIGHT:
+                pressedRight = true;
+                moveRight();
+                break;
+            case Input.Keys.UP:
+                shoot();
+                break;
         }
+        return false;
     }
 
-    @Override
-    public boolean touchDragged(Vector2 touch, int pointer) {
-        this.touch.set(touch);
-        return super.touchDragged(touch, pointer);
+    public boolean keyUp(int keycode) {
+        switch (keycode) {
+            case Input.Keys.A:
+            case Input.Keys.LEFT:
+                pressedLeft = false;
+                if (pressedRight) {
+                    moveRight();
+                } else {
+                    stop();
+                }
+                break;
+
+            case Input.Keys.D:
+            case Input.Keys.RIGHT:
+                pressedRight = false;
+                if (pressedLeft) {
+                    moveLeft();
+                } else {
+                    stop();
+                }
+                break;
+        }
+        return false;
+    }
+
+    private void moveRight() {
+        v.set(v0);
+    }
+
+    private void moveLeft() {
+        v.set(v0).rotate(180);
+    }
+
+    private void stop() {
+        v.setZero();
+    }
+
+    private void shoot() {
+        Bullet bullet = bulletPool.obtain();
+        bullet.set(this, bulletRegion, pos, bulletV, 0.01f, worldBounds, 1);
     }
 }
