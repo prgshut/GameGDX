@@ -3,8 +3,6 @@ package ru.geekbrains.stargame.sprite;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.math.Vector2;
 
-import ru.geekbrains.base.Sprite;
-import ru.geekbrains.math.Rect;
 import ru.geekbrains.stargame.base.Sprite;
 import ru.geekbrains.stargame.math.Rect;
 
@@ -28,8 +26,6 @@ public class Bullet extends Sprite {
         }
     }
 
-    private void destroy() {
-    }
 
     public void set(
             Sprite owner,
@@ -42,7 +38,7 @@ public class Bullet extends Sprite {
     ) {
         this.owner = owner;
         this.regions[0] = region;
-        this.pos.set(pos0);
+        this.pos.set(pos0.x,pos0.y+height);
         this.v.set(v0);
         setHeightProportion(height);
         this.worldBounds = worldBounds;

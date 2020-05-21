@@ -1,6 +1,8 @@
 package ru.geekbrains.stargame.sprite;
 
+import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
+import com.badlogic.gdx.audio.Sound;
 import com.badlogic.gdx.graphics.g2d.TextureAtlas;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.math.Vector2;
@@ -8,8 +10,9 @@ import com.badlogic.gdx.math.Vector2;
 import ru.geekbrains.stargame.base.ScaledButton;
 import ru.geekbrains.stargame.base.Sprite;
 import ru.geekbrains.stargame.math.Rect;
+import ru.geekbrains.stargame.pool.BulletPool;
 
-public class Ship extends Sprite {
+public class MyShip extends Sprite {
     private static final float SIZE = 0.15f;
     private static final float MARGIN = 0.05f;
     private static final int INVALID_POINTER = -1;
@@ -20,14 +23,34 @@ public class Ship extends Sprite {
     private Vector2 v0, v, bulletV;
     private int leftPointer;
     private int rightPointer;
+    private float shootTimer;
+    private float shootInterval;
     private Rect worldBounds;
-    public Ship(TextureAtlas atlas) {
+    private BulletPool bulletPool;
+    private TextureRegion bulletRegion;
+    private Sound sound;
+
+    public MyShip(TextureAtlas atlas,BulletPool bulletPool) {
         super(atlas.findRegion("main_ship"),2);
+        this.bulletPool = bulletPool;
+        bulletRegion = atlas.findRegion("bulletMainShip");
+        bulletV = new Vector2(0, 0.5f);
+        v0 = new Vector2(0.5f, 0);
+        v = new Vector2();
+        leftPointer = INVALID_POINTER;
+        rightPointer = INVALID_POINTER;
+        shootInterval= 0.3f;
+        sound = Gdx.audio.newSound(Gdx.files.internal("sounds/laser.wav"));
 
     }
 
     @Override
     public void update(float delta) {
+        shootTimer+=delta;
+        if (shootTimer>shootInterval){
+            shoot();
+            shootTimer=0;
+        }
         move(delta);
     }
 
@@ -146,6 +169,10 @@ public class Ship extends Sprite {
 
     private void shoot() {
         Bullet bullet = bulletPool.obtain();
+        sound.play();
         bullet.set(this, bulletRegion, pos, bulletV, 0.01f, worldBounds, 1);
+    }
+    public void dispose() {
+        sound.dispose();
     }
 }
