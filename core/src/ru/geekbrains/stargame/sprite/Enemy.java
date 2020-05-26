@@ -21,6 +21,7 @@ public class Enemy extends Ship {
         super.update(delta);
         if (getTop()<=worldBounds.getTop()){
             v.set(v0);
+            bulletPos.set(pos.x, pos.y - getHalfHeight());
             autoShoot(delta);
         } else {
             v.set(STAR_V);
@@ -51,6 +52,13 @@ public class Enemy extends Ship {
         this.reloadTimer = reloadInterval;
         this.hp = hp;
         setHeightProportion(height);
-//        this.v.set(v0);
+
+    }
+    public boolean isBulletCollision(Bullet bullet) {
+        return !(bullet.getRight() < getLeft()
+                || bullet.getLeft() > getRight()
+                || bullet.getBottom() > getTop()
+                || bullet.getTop() < pos.y
+        );
     }
 }
