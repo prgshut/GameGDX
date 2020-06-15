@@ -20,11 +20,8 @@ public class MyShip extends Ship {
     private static final int HP = 100;
     private boolean pressedLeft;
     private boolean pressedRight;
-
     private int leftPointer;
     private int rightPointer;
-
-
 
     public MyShip(TextureAtlas atlas, BulletPool bulletPool, ExplosionPool explosionPool) {
         super(atlas.findRegion("main_ship"), 1, 2, 2);
@@ -41,7 +38,6 @@ public class MyShip extends Ship {
         reloadTimer = reloadInterval;
         hp = HP;
         sound = Gdx.audio.newSound(Gdx.files.internal("sounds/laser.wav"));
-
     }
 
     @Override
@@ -145,6 +141,13 @@ public class MyShip extends Ship {
                 break;
         }
         return false;
+    }
+    public boolean isBulletCollision(Bullet bullet) {
+        return !(bullet.getRight() < getLeft()
+                || bullet.getLeft() > getRight()
+                || bullet.getBottom() > pos.y
+                || bullet.getTop() < getBottom()
+        );
     }
 
     private void moveRight() {
