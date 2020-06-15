@@ -50,6 +50,8 @@ public class EnemyEmitter {
 
     private final EnemyPool enemyPool;
 
+    private int level;
+
     public EnemyEmitter(TextureAtlas atlas, EnemyPool enemyPool) {
         TextureRegion enemy0 = atlas.findRegion("enemy0");
         this.enemySmallRegions = Regions.split(enemy0, 1, 2, 2);
@@ -62,13 +64,15 @@ public class EnemyEmitter {
         this.enemyBigV = new Vector2(0, -0.005f);
         this.bulletRegion = atlas.findRegion("bulletEnemy");
         this.enemyPool = enemyPool;
+        level=1;
     }
 
     public void resize(Rect worldBounds) {
         this.worldBounds = worldBounds;
     }
 
-    public void generate(float delta) {
+    public void generate(float delta, int frags) {
+        level = frags / 10 + 1;
         generateTimer += delta;
         if (generateTimer >= GENERATE_INTERVAL) {
             generateTimer = 0f;
@@ -114,5 +118,9 @@ public class EnemyEmitter {
             enemy.pos.x = Rnd.nextFloat(worldBounds.getLeft() + enemy.getHalfWidth(), worldBounds.getRight() - enemy.getHalfWidth());
             enemy.setBottom(worldBounds.getTop());
         }
+    }
+
+    public int getLevel() {
+        return level;
     }
 }
